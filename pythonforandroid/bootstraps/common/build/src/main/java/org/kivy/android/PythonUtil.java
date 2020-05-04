@@ -17,19 +17,32 @@ public class PythonUtil {
         // match files of the form "libssl.*.so".
         File [] files = libsDir.listFiles();
 
-        pattern = "lib" + pattern + "\\.so";
-        Pattern p = Pattern.compile(pattern);
+        String pat = "lib" + pattern + "\\.so";
+        Pattern p = Pattern.compile(pat);
         for (int i = 0; i < files.length; ++i) {
             File file = files[i];
             String name = file.getName();
-            Log.v(TAG, "Checking pattern " + pattern + " against " + name);
+            Log.v(TAG, "Checking pattern " + pat + " against " + name);
             if (p.matcher(name).matches()) {
-                Log.v(TAG, "Pattern " + pattern + " matched file " + name);
+                Log.v(TAG, "Pattern " + pat + " matched file " + name);
                 libsList.add(name.substring(3, name.length() - 3));
             }
         }
-    }
 
+        pat = "lib" + pattern + "\\.so\\.d+";
+        p = Pattern.compile(pat);
+        for (int i = 0; i < files.length; ++i) {
+            File file = files[i];
+            String name = file.getName();
+            Log.v(TAG, "Checking pattern " + pat + " against " + name);
+            if (p.matcher(name).matches()) {
+                Log.v(TAG, "Pattern " + pat + " matched file " + name);
+                libsList.add(name.substring(3, name.length() - 3));
+            }
+        }
+
+    }
+    
     protected static ArrayList<String> getLibraries(File libsDir) {
         ArrayList<String> libsList = new ArrayList<String>();
         addLibraryIfExists(libsList, "sqlite3", libsDir);

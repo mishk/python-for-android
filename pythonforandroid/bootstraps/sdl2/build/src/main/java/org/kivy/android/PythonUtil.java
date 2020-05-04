@@ -16,14 +16,25 @@ public class PythonUtil {
         // match files of the form "libssl.*.so".
         File [] files = libsDir.listFiles();
 
-        pattern = "lib" + pattern + "\\.so";
-        Pattern p = Pattern.compile(pattern);
+        String pat = "lib" + pattern + "\\.so";
+        Pattern p = Pattern.compile(pat);
         for (int i = 0; i < files.length; ++i) {
             File file = files[i];
             String name = file.getName();
-            Log.v(TAG, "Checking pattern " + pattern + " against " + name);
+            Log.v(TAG, "Checking pattern " + pat + " against " + name);
             if (p.matcher(name).matches()) {
-                Log.v(TAG, "Pattern " + pattern + " matched file " + name);
+                Log.v(TAG, "Pattern " + pat + " matched file " + name);
+                libsList.add(name.substring(3, name.length() - 3));
+            }
+        }
+        pat = "lib" + pattern + "\\.so\\.d+";
+        p = Pattern.compile(pat);
+        for (int i = 0; i < files.length; ++i) {
+            File file = files[i];
+            String name = file.getName();
+            Log.v(TAG, "Checking pattern " + pat + " against " + name);
+            if (p.matcher(name).matches()) {
+                Log.v(TAG, "Pattern " + pat + " matched file " + name);
                 libsList.add(name.substring(3, name.length() - 3));
             }
         }
@@ -34,6 +45,8 @@ public class PythonUtil {
         addLibraryIfExists(libsList, "sqlite3", libsDir);
         addLibraryIfExists(libsList, "ffi", libsDir);
         addLibraryIfExists(libsList, "png16", libsDir);
+        libsList.add("libopenblas.so.3");
+        libsList.add("libgfortran.so.5");
         libsList.add("SDL2");
         libsList.add("SDL2_image");
         libsList.add("SDL2_mixer");
@@ -56,9 +69,14 @@ public class PythonUtil {
         for (String lib : getLibraries(libsDir)) {
             Log.v(TAG, "Loading library: " + lib);
             try {
-                System.loadLibrary(lib);
-                if (lib.startsWith("python")) {
-                    foundPython = true;
+                if (lib.startsWith("libopenblas") || lib.startsWith("libgfortran")) {
+                    System.load(lib);
+                }
+                else {
+                    System.loadLibrary(lib);
+                    if (lib.startsWith("python")) {
+                        foundPython = true;
+                    }
                 }
             } catch(UnsatisfiedLinkError e) {
                 // If this is the last possible libpython
